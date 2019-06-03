@@ -1,0 +1,12 @@
+192.168.0.1
+http://192.168.0.1/
+admin
+admin
+127.0.0.1
+http://127.0.0.1
+u1
+p1
+localhost
+http://localhost
+u2
+p3
