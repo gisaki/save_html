@@ -7,20 +7,24 @@ using System.Collections.ObjectModel;
 
 using System.IO;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace SaveHtml
 {
 
     public class ViewModel : INotifyPropertyChanged
     {
-        // logs
-        public string Logs_ { get; private set; }
-        public void addLog(string logtext)
+        // ViewModel
+        public ViewModel()
         {
-            string logline = "[" + DateTime.Now + "]" + logtext;
-            this.Logs_ += (logline + "\n");
+            bool loaded = LoadInitialData();
+            if (!loaded)
+            {
+                this.UrlData_ = new ObservableCollection<UrlItem>();
+                this.UrlData_.Add(new UrlItem { Name_ = "name1", Path_ = "path1" });
+                this.UrlData_.Add(new UrlItem { Name_ = "name2", Path_ = "path2" });
+            }
 
-            NotifyPropertyChanged("Logs_");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -32,22 +36,45 @@ namespace SaveHtml
             }
         }
 
-
-        // Url
-        public ObservableCollection<UrlItem> UrlData_ { get; set; }
-
-
-        public ViewModel()
+        // Command
+        private ICommand httpRequestCommand_ = null;
+        public ICommand HttpRequestCommand_
         {
-            bool loaded = LoadInitialData();
-            if (!loaded)
+            get
             {
-                this.UrlData_ = new ObservableCollection<UrlItem>();
-                this.UrlData_.Add(new UrlItem { Name_ = "name1", Path_ = "path1" });
-                this.UrlData_.Add(new UrlItem { Name_ = "name2", Path_ = "path2" });
+                if (this.httpRequestCommand_ == null)
+                {
+                    this.httpRequestCommand_ = new HttpRequestCommand(this);
+                }
+                return this.httpRequestCommand_;
             }
         }
 
+        // SaveTo
+        private string saveTo_ = "./Log.txt";
+        public string SaveTo_
+        {
+            get { return this.saveTo_; }
+            set
+            {
+                this.saveTo_ = value;
+                NotifyPropertyChanged("SaveTo_");
+            }
+        }
+        public bool OverwriteExistingFile_ { get; set; } 
+
+        // Logs
+        public string Logs_ { get; private set; }
+        public void addLog(string logtext)
+        {
+            string logline = "[" + DateTime.Now + "]" + logtext;
+            this.Logs_ += (logline + "\n");
+
+            NotifyPropertyChanged("Logs_");
+        }
+
+        // URL
+        public ObservableCollection<UrlItem> UrlData_ { get; private set; }
         private bool LoadInitialData()
         {
             try
@@ -68,6 +95,18 @@ namespace SaveHtml
                 return false;
             }
             return true;
+        }
+
+        // Progress
+        private System.Windows.Visibility progressVisibility_ = System.Windows.Visibility.Hidden;
+        public System.Windows.Visibility ProgressVisibility_
+        {
+            get { return this.progressVisibility_; }
+            set
+            {
+                this.progressVisibility_ = value;
+                NotifyPropertyChanged("ProgressVisibility_");
+            }
         }
     }
 
